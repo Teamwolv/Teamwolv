@@ -57,11 +57,12 @@ export const metadata: Metadata = {
     title: 'Team Wolv - Event Management Platform',
     description: 'Your premier event management platform for organizing and managing events.',
   },
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 1,
-  },
+}
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
 }
 
 export default function RootLayout({
