@@ -16,9 +16,6 @@ function EventsList() {
           <Link href="/events/featured" className="text-primary hover:underline">
             Featured
           </Link>
-          <Link href="/admin/events" className="text-foreground/70 hover:text-foreground">
-            Manage in Admin
-          </Link>
         </div>
       </div>
       <div className="grid gap-12 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">

@@ -3,6 +3,7 @@ import Image from "next/image"
 import { CardBody, CardContainer, CardItem } from "@/components/ui/3d-card"
 import { Calendar, MapPin, Clock, ExternalLink } from "lucide-react"
 import { useEffect, useState } from "react"
+import { EventModal } from "@/components/event-modal"
 
 interface Event {
   id: string
@@ -44,10 +45,24 @@ function ClientDate({ date, type }: { date: string; type: 'date' | 'time' }) {
 }
 
 export function EventCard3D({ event }: EventCardProps) {
+  const [isModalOpen, setIsModalOpen] = useState(false)
+
+  const handleCardClick = () => {
+    setIsModalOpen(true)
+  }
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false)
+  }
+
   return (
-    <div className="mb-8">
-      <CardContainer className="inter-var">
-        <CardBody className="relative group/card dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1] dark:bg-black/20 dark:border-white/[0.1] border-black/[0.05] w-auto sm:w-[22rem] h-auto rounded-xl p-4 border-[0.5px] backdrop-blur-sm bg-white/10">
+    <>
+      <div className="mb-8">
+        <CardContainer className="inter-var">
+          <CardBody 
+            className="relative group/card dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1] dark:bg-black/20 dark:border-white/[0.1] border-black/[0.05] w-auto sm:w-[22rem] h-auto rounded-xl p-4 border-[0.5px] backdrop-blur-sm bg-white/10 cursor-pointer hover:scale-105 transition-transform duration-200"
+            onClick={handleCardClick}
+          >
           {/* Event Image */}
           <CardItem translateZ="100" className="w-full mb-4">
             <Image
@@ -109,6 +124,7 @@ export function EventCard3D({ event }: EventCardProps) {
               target="_blank"
               rel="noopener noreferrer"
               className="px-4 py-2 rounded-lg bg-primary hover:bg-primary/80 text-white text-sm font-semibold transition-colors w-full text-center flex items-center justify-center space-x-2"
+              onClick={(e) => e.stopPropagation()}
             >
               <ExternalLink className="w-4 w-4" />
               <span>Get Tickets</span>
@@ -124,5 +140,13 @@ export function EventCard3D({ event }: EventCardProps) {
         </CardBody>
       </CardContainer>
     </div>
+
+    {/* Event Modal */}
+    <EventModal 
+      event={event}
+      isOpen={isModalOpen}
+      onClose={handleCloseModal}
+    />
+  </>
   )
 }
