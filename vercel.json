@@ -1,9 +1,9 @@
 {
   "framework": "nextjs",
-  "buildCommand": "npm run build",
-  "devCommand": "npm run dev",
-  "installCommand": "npm install",
-  "outputDirectory": ".next",
+  "buildCommand": "cd Frontend && npm install && npm run build",
+  "devCommand": "cd Frontend && npm run dev",
+  "installCommand": "cd Frontend && npm install",
+  "outputDirectory": "Frontend/.next",
   "functions": {
     "app/api/**/*.ts": {
       "maxDuration": 30
