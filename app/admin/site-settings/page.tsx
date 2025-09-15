@@ -23,26 +23,35 @@ export default function SiteSettingsPage() {
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [hasChanges, setHasChanges] = useState(false)
   const [localSettings, setLocalSettings] = useState(settings)
+  const [logoUploadStatus, setLogoUploadStatus] = useState<'idle' | 'uploading' | 'uploaded' | 'error'>('idle')
+  const [bannerUploadStatus, setBannerUploadStatus] = useState<'idle' | 'uploading' | 'uploaded' | 'error'>('idle')
 
   const handleLogoUpload = async (file: File) => {
     try {
       setUploading(true)
       setUploadError(null)
+      setLogoUploadStatus('uploading')
       
       // Upload to Supabase storage
       const { url, error } = await uploadFile(file, 'logos', `logo-${Date.now()}-${file.name}`)
       
       if (error) {
         setUploadError('Failed to upload image. Please try again.')
+        setLogoUploadStatus('error')
         return
       }
       
       // Update local settings
       setLocalSettings(prev => ({ ...prev, logo_url: url }))
       setHasChanges(true)
+      setLogoUploadStatus('uploaded')
+      
+      // Reset status after 2 seconds
+      setTimeout(() => setLogoUploadStatus('idle'), 2000)
     } catch (error) {
       console.error('Upload error:', error)
       setUploadError('Failed to upload image. Please try again.')
+      setLogoUploadStatus('error')
     } finally {
       setUploading(false)
     }
@@ -54,8 +63,15 @@ export default function SiteSettingsPage() {
   }
 
   const handleSave = async () => {
-    await updateSettings(localSettings)
-    setHasChanges(false)
+    try {
+      // Update settings without waiting for completion
+      updateSettings(localSettings)
+      setHasChanges(false)
+    } catch (error) {
+      console.error('Save error:', error)
+      // Re-enable save button on error
+      setHasChanges(true)
+    }
   }
   
   return (
@@ -96,12 +112,28 @@ export default function SiteSettingsPage() {
               onImageUpload={handleLogoUpload}
               className="w-full"
             />
-            {uploading && (
-              <p className="text-sm text-blue-600">Uploading image...</p>
-            )}
-            {uploadError && (
-              <p className="text-sm text-red-600">{uploadError}</p>
-            )}
+                {logoUploadStatus === 'uploading' && (
+                  <p className="text-sm text-blue-600 flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                    Uploading image...
+                  </p>
+                )}
+                {logoUploadStatus === 'uploaded' && (
+                  <p className="text-sm text-green-600 flex items-center gap-2">
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                    Uploaded successfully!
+                  </p>
+                )}
+                {logoUploadStatus === 'error' && (
+                  <p className="text-sm text-red-600 flex items-center gap-2">
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                    {uploadError}
+                  </p>
+                )}
             {settings.logo_url && (
               <div className="mt-2">
                 <p className="text-xs text-muted-foreground mb-2">Current logo:</p>
@@ -122,29 +154,56 @@ export default function SiteSettingsPage() {
         </Field>
         <Field label="Site Banner Image (Optional)">
           <div className="space-y-2">
-            <ImageUpload 
-              onImageUpload={async (file) => {
-                try {
-                  setUploading(true)
-                  setUploadError(null)
-                  
-                  const { url, error } = await uploadFile(file, 'logos', `banner-${Date.now()}-${file.name}`)
-                  
-                  if (error) {
-                    setUploadError('Failed to upload banner image. Please try again.')
-                    return
-                  }
-                  
-                  updateSettings({ banner_url: url })
-                } catch (error) {
-                  console.error('Upload error:', error)
-                  setUploadError('Failed to upload banner image. Please try again.')
-                } finally {
-                  setUploading(false)
-                }
-              }}
-              className="w-full"
-            />
+                <ImageUpload 
+                  onImageUpload={async (file) => {
+                    try {
+                      setBannerUploadStatus('uploading')
+                      setUploadError(null)
+                      
+                      const { url, error } = await uploadFile(file, 'logos', `banner-${Date.now()}-${file.name}`)
+                      
+                      if (error) {
+                        setUploadError('Failed to upload banner image. Please try again.')
+                        setBannerUploadStatus('error')
+                        return
+                      }
+                      
+                      setLocalSettings(prev => ({ ...prev, banner_url: url }))
+                      setHasChanges(true)
+                      setBannerUploadStatus('uploaded')
+                      
+                      // Reset status after 2 seconds
+                      setTimeout(() => setBannerUploadStatus('idle'), 2000)
+                    } catch (error) {
+                      console.error('Upload error:', error)
+                      setUploadError('Failed to upload banner image. Please try again.')
+                      setBannerUploadStatus('error')
+                    }
+                  }}
+                  className="w-full"
+                />
+                {bannerUploadStatus === 'uploading' && (
+                  <p className="text-sm text-blue-600 flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                    Uploading banner...
+                  </p>
+                )}
+                {bannerUploadStatus === 'uploaded' && (
+                  <p className="text-sm text-green-600 flex items-center gap-2">
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                    Banner uploaded successfully!
+                  </p>
+                )}
+                {bannerUploadStatus === 'error' && (
+                  <p className="text-sm text-red-600 flex items-center gap-2">
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                    {uploadError}
+                  </p>
+                )}
             {settings.banner_url && (
               <div className="mt-2">
                 <p className="text-xs text-muted-foreground mb-2">Current banner:</p>

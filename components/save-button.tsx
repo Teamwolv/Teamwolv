@@ -18,7 +18,13 @@ export function SaveButton({ onSave, disabled = false, className = "" }: SaveBut
     try {
       setIsSaving(true)
       setError(null)
-      await onSave()
+      
+      // Don't wait for completion - make it non-blocking
+      onSave().catch((err) => {
+        setError(err instanceof Error ? err.message : 'Failed to save changes')
+        setTimeout(() => setError(null), 3000)
+      })
+      
       setIsSuccess(true)
       setTimeout(() => setIsSuccess(false), 2000)
     } catch (err) {
