@@ -2,9 +2,11 @@
 
 import { useEffect, useRef } from "react"
 import { cn } from "@/lib/utils"
+import { useSiteData } from "@/providers/site-data-provider"
 
 export function AboutSection() {
   const ref = useRef<HTMLDivElement | null>(null)
+  const { about } = useSiteData()
 
   useEffect(() => {
     const el = ref.current
@@ -20,6 +22,8 @@ export function AboutSection() {
     observer.observe(el)
     return () => observer.disconnect()
   }, [])
+
+  if (!about) return null
 
   return (
     <section className="relative">
@@ -39,29 +43,25 @@ export function AboutSection() {
           </div>
 
           <div className="mx-auto max-w-3xl text-center">
-            <h2 className="text-pretty text-3xl font-semibold tracking-tight md:text-4xl">About Us</h2>
+            <h2 className="text-pretty text-3xl font-semibold tracking-tight md:text-4xl">{about.heading}</h2>
             <p className="mt-4 text-balance text-sm/6 text-[#CBD5E1] md:text-base/7">
-              We craft unforgettable nights—curating premium productions where sound, light, and space converge. Our
-              team blends precision logistics with bold creative to stage events that feel effortless and extraordinary.
+              {about.content}
             </p>
           </div>
 
           {/* 3-pill highlights */}
           <div className="mt-10 grid grid-cols-1 gap-4 md:grid-cols-3">
-            <Feature title="Curation" desc="Lineups and experiences designed with intention—no filler, just flow." />
-            <Feature
-              title="Production"
-              desc="Audiophile-grade systems, cinematic lighting, and detail-first staging."
-            />
-            <Feature title="Experience" desc="From door to encore, every touch-point is considered and elevated." />
+            {about.features?.map((feature: any, index: number) => (
+              <Feature key={index} title={feature.title} desc={feature.description} />
+            ))}
           </div>
 
           {/* signature block */}
           <div className="mt-10 flex flex-col items-center gap-3 md:flex-row md:justify-center">
             <div className="h-10 w-10 rounded-full border border-white/15 bg-[#0B0B0E]" aria-hidden />
             <div className="text-center md:text-left">
-              <p className="text-sm text-white">Event Co.</p>
-              <p className="text-xs text-white/60">Est. 2017 — Black & Blood Red. Built for the night.</p>
+              <p className="text-sm text-white">{about.signature?.company}</p>
+              <p className="text-xs text-white/60">{about.signature?.tagline}</p>
             </div>
           </div>
         </div>

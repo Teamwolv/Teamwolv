@@ -14,13 +14,13 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 }
 
 export default function AdminAboutPage() {
-  const { data, updateAbout } = useSiteData()
+  const { about, updateAbout } = useSiteData()
   return (
     <div className="mx-auto max-w-2xl">
       <Field label="Heading">
         <input
           className="rounded-md border border-border/50 bg-muted/60 px-3 py-2 text-sm"
-          value={data.about.heading}
+          value={about.heading}
           onChange={(e) => updateAbout({ heading: e.target.value })}
         />
       </Field>
@@ -28,7 +28,7 @@ export default function AdminAboutPage() {
         <textarea
           rows={6}
           className="mt-3 rounded-md border border-border/50 bg-muted/60 px-3 py-2 text-sm"
-          value={data.about.content}
+          value={about.content}
           onChange={(e) => updateAbout({ content: e.target.value })}
         />
       </Field>

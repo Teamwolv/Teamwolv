@@ -1,15 +1,18 @@
 "use client"
 
 import Link from "next/link"
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState, useMemo } from "react"
 import { useSiteData } from "@/providers/site-data-provider"
 import { EventCard3D } from "@/components/3d-event-card"
+import { EventCardSkeleton } from "@/components/loading-skeleton"
 
 export function FeaturedEventsSection() {
-  const { data } = useSiteData()
+  const { events } = useSiteData()
   const ref = useRef<HTMLDivElement>(null)
+  const [isClient, setIsClient] = useState(false)
 
   useEffect(() => {
+    setIsClient(true)
     const el = ref.current
     if (!el) return
     const ob = new IntersectionObserver(
@@ -22,7 +25,7 @@ export function FeaturedEventsSection() {
     return () => ob.disconnect()
   }, [])
 
-  const featured = data.events.filter((e) => e.featured)
+  const featured = useMemo(() => events.filter((e) => e.featured), [events])
 
   return (
     <section className="relative">
@@ -36,12 +39,25 @@ export function FeaturedEventsSection() {
             View featured
           </Link>
         </div>
-        <div className="grid gap-8 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
-          {featured.map((ev) => (
-            <div key={ev.id} className="flex justify-center">
-              <EventCard3D event={ev} />
+        <div className="grid gap-12 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
+          {!isClient ? (
+            // Show loading skeletons
+            Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="flex justify-center">
+                <EventCardSkeleton />
+              </div>
+            ))
+          ) : featured.length > 0 ? (
+            featured.map((ev) => (
+              <div key={ev.id} className="flex justify-center">
+                <EventCard3D event={ev} />
+              </div>
+            ))
+          ) : (
+            <div className="col-span-full text-center py-12">
+              <p className="text-muted-foreground">No featured events available</p>
             </div>
-          ))}
+          )}
         </div>
       </div>
     </section>
